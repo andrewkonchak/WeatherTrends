@@ -10,11 +10,9 @@ import Foundation
 
 class WeatherSource {
     
-    var parsedTextData = [[String]]()
-    var tableController: WeatherTableViewController?
-    
     // MARK: - Fetch elements from .txt file
-    func fetchData() {
+    
+    func fetchData(completion: @escaping ([WeatherData]) -> ()) {
         DispatchQueue.global(qos: .userInteractive).async {
             let session = URLSession(configuration: .ephemeral)
             let url = URL(string: "https://www.metoffice.gov.uk/pub/data/weather/uk/climate/stationdata/bradforddata.txt")!
@@ -22,9 +20,9 @@ class WeatherSource {
                 guard let data = data else { return }
                 guard let textData = String(data: data, encoding: String.Encoding.utf8) else { return }
                 do {
-                    self.parsedTextData = try Parser.parse(textData: textData)
+                    let parsedData = try Parser.parse(data: textData)
                     DispatchQueue.main.async {
-                        self.tableController?.tableview.reloadData()
+                        completion(parsedData)
                     }
                 } catch let error as NSError {
                     print(error)
@@ -33,4 +31,5 @@ class WeatherSource {
             task.resume()
         }
     }
+    
 }

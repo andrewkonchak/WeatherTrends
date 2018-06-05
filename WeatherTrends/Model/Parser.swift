@@ -10,44 +10,29 @@ import Foundation
 
 class Parser {
     
-    init() {}
-    
-    class func parse(textData: String) throws -> [[String]] {
+    class func parse(data: String) throws -> [WeatherData] {
         
-        // MARK: - one array element == one line
-        let splitDataText = textData.split(separator: "\r\n")
+        // one array element == one line
+        let splitedData = data.split(separator: "\r\n")
         
-        var firstIndx = 0
-        if let index = splitDataText.index(of: "              degC    degC    days      mm   hours") {
-            firstIndx  = index + 1
+        var index = 0
+        if let previousIndex = splitedData.index(of: "              degC    degC    days      mm   hours") {
+            index  = previousIndex + 1
         }
         
-        // MARK: - Createing arrays data range
-        var rawMonthlyDataArrays = splitDataText[firstIndx..<splitDataText.count].map {
-            $0.split(separator: " ")
-        }
+        // Createing arrays data range
+        let rawData = splitedData[index..<splitedData.count].map { $0.split(separator: " ") }
         
-        // MARK: - Clearing elements of array deleting "*" element
-        var clearMonthlyDataArrays = rawMonthlyDataArrays.map {
-            $0.map {
-                $0.replacingOccurrences(of: "*", with: "")
-            }
-        }
+        // Clearing elements of array deleting "*" element
+        var clearData = rawData.map { $0.map { $0.replacingOccurrences(of: "*", with: "") } }
         
-        // MARK: - Clearing elements of array deleting "#" element
-        clearMonthlyDataArrays = rawMonthlyDataArrays.map {
-            $0.map {
-                $0.replacingOccurrences(of: "#", with: "")
-            }
-        }
+        // Clearing elements of array deleting "#" element
+        clearData = clearData.map { $0.map { $0.replacingOccurrences(of: "#", with: "") } }
         
-        // MARK: - Clearing elements of array deleting "Provisional" element
-        rawMonthlyDataArrays = rawMonthlyDataArrays.flatMap {
-            $0.filter {
-                $0 != "Provisional"
-            }
+        // Clearing elements of array deleting "Provisional" element
+        return clearData.flatMap { element in
+            var filteredData = element.filter { $0 != "Provisional" }
+            return WeatherData(year: filteredData[0], mm: filteredData[1], tmax: filteredData[2], tmin: filteredData[3], af: filteredData[4], rain: filteredData[5], sun: filteredData[6])
         }
-        
-        return clearMonthlyDataArrays
     }
 }

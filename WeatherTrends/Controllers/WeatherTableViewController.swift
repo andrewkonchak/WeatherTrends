@@ -10,31 +10,47 @@ import UIKit
 
 class WeatherTableViewController: UITableViewController {
     
-    var weatherSource = WeatherSource()
-    var customCellView = CustomTableViewCell()
+    // MARK: - Properties
     
+    var weatherSource = WeatherSource()
+    var data = [WeatherData]()
 
+    // MARK: - IBOutlets
+    
     @IBOutlet var tableview: UITableView!
+    
+    // MARK: - UITableViewController
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        weatherSource.fetchData()
-        weatherSource.tableController = self
-        
+        weatherSource.fetchData { data in
+            self.data = data
+            self.tableview.reloadData()
+        }
     }
     
-    // MARK: - Table view data source
+}
+    
+// MARK: - UITableViewDelegate
+    
+extension WeatherTableViewController {
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100
     }
+    
+}
+
+// MARK: - UITableViewDataSource
+    
+extension WeatherTableViewController {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return weatherSource.parsedTextData.count
+        return data.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -42,9 +58,8 @@ class WeatherTableViewController: UITableViewController {
             return UITableViewCell()
         }
 
-        let weather = weatherSource.parsedTextData[indexPath.row]
-        cell.customViewCell.layer.cornerRadius = 12 // custom cell corner radius
-        cell.configure(yyyy: weather[0], mm: weather[1], tmax: weather[2], tmin: weather[3], af: weather[4], rain: weather[5], sun: weather[6])
+        let weather = data[indexPath.row]
+        cell.configure(yyyy: weather.year, mm: weather.mm, tmax: weather.tmax, tmin: weather.tmin, af: weather.af, rain: weather.rain, sun: weather.sun)
         
         return cell
     }

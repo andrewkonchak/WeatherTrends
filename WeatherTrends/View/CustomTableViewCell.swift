@@ -10,6 +10,8 @@ import UIKit
 
 class CustomTableViewCell: UITableViewCell {
     
+    // MARK: - IBOutlets
+    
     @IBOutlet private weak var yyyy: UILabel!
     @IBOutlet private weak var mm: UILabel!
     @IBOutlet private weak var tmax: UILabel!
@@ -17,7 +19,14 @@ class CustomTableViewCell: UITableViewCell {
     @IBOutlet private weak var af: UILabel!
     @IBOutlet private weak var rain: UILabel!
     @IBOutlet private weak var sun: UILabel!
-    @IBOutlet weak var customViewCell: UIView!
+    @IBOutlet private weak var customViewCell: UIView!
+    
+    // MARK: - UITableViewCell
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        customViewCell.layer.cornerRadius = 12 
+    }
     
     override func prepareForReuse() {
         self.yyyy.text = ""
@@ -28,6 +37,8 @@ class CustomTableViewCell: UITableViewCell {
         self.rain.text = ""
         self.sun.text = ""
     }
+    
+    // MARK: - Configuration
     
     func configure(yyyy: String, mm: String, tmax: String, tmin: String, af: String, rain: String, sun: String) {
         self.yyyy.text = yyyy
