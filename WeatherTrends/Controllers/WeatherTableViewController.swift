@@ -12,8 +12,11 @@ class WeatherTableViewController: UITableViewController {
     
     // MARK: - Properties
     
+    let searchController = UISearchController(searchResultsController: nil)
+    
     var weatherSource = WeatherSource()
     var data = [WeatherData]()
+    var filteredData = [WeatherData]()
 
     // MARK: - IBOutlets
     
@@ -23,12 +26,12 @@ class WeatherTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        searchBarController()
         weatherSource.fetchData { data in
             self.data = data
             self.tableview.reloadData()
         }
     }
-    
 }
     
 // MARK: - UITableViewDelegate
@@ -46,11 +49,14 @@ extension WeatherTableViewController {
 extension WeatherTableViewController {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return data.isEmpty ? 0 : 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data.count
+        if searchController.isActive {
+            return filteredData.count
+        }
+        return self.data.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -58,10 +64,41 @@ extension WeatherTableViewController {
             return UITableViewCell()
         }
 
-        let weather = data[indexPath.row]
+        let weather: WeatherData
+        weather = searchController.isActive ? filteredData[indexPath.row] : data[indexPath.row]
         cell.configure(yyyy: weather.year, mm: weather.mm, tmax: weather.tmax, tmin: weather.tmin, af: weather.af, rain: weather.rain, sun: weather.sun)
         
         return cell
     }
+}
 
+// MARK: - SearchBar
+
+extension WeatherTableViewController: UISearchResultsUpdating {
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        if searchController.searchBar.text! == "" {
+            filteredData = data
+        } else {
+            // Filter the results
+            filteredData = data.filter {
+                $0.year.lowercased().contains(searchController.searchBar.text!.lowercased())
+            }
+        }
+        self.tableView.reloadData()
+    }
+    
+    // MARK: - SearchBar settings
+    
+    func searchBarController() {
+        searchController.searchBar.searchBarStyle = UISearchBarStyle.prominent
+        searchController.searchBar.barTintColor = #colorLiteral(red: 0.2304475904, green: 0.3820989728, blue: 0.482727468, alpha: 1)
+        searchController.searchBar.placeholder = "Search by year..."
+        
+        searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        
+        definesPresentationContext = true
+        tableView.tableHeaderView = searchController.searchBar
+    }
 }
